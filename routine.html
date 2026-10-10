@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<!--
+  ============================================================
+  PAGE 3 — routine.html (Live Routine + Cards + Timers)
+  ============================================================
+  Purpose:
+    The active workout view. Reads exercises from the session
+    and dynamically builds exercise cards. Each card has:
+      - A status badge (Pending / Active / Done) pinned to
+        the top-right corner using position:absolute.
+      - A set progress bar updated in real time.
+      - A rest-stop countdown timer using setInterval.
+      - Action buttons: "Set Done", "Finish", "Remove".
+
+  Chapter 13: DOM manipulation — cards built with createElement,
+              appendChild, innerHTML. Event listeners on buttons.
+              setInterval / clearInterval for the rest timer.
+              DOM color change when timer finishes.
+  Chapter 14: CSS Grid auto-fill card layout.
+              position:relative on card, position:absolute on badge.
+              .completed-card class switch changes card styling.
+  Chapter 18: Box model (padding/margin/border/box-sizing).
+              linear-gradient on header, card headers, progress bars.
+              box-shadow for card depth.
+              transition on hover, timer state, card completion.
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Exercise Planner — My Routine</title>
+<link href="css/style.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+     Chapter 14: display:flex layout.
+     Chapter 18: linear-gradient background, sticky positioning.
+     ══════════════════════════════════════════════════════════ -->
+<header class="site-header">
+<div class="header-inner">
+<!-- Logo -->
+<div class="logo">
+<div class="logo-icon">🏋️</div>
+<div>
+<span class="logo-text">Exercise Planner</span>
+<span class="logo-sub">Workout Routine Manager</span>
+</div>
+</div>
+<!-- Right side nav -->
+<div class="nav-right">
+<!-- Step indicator pills -->
+<div class="step-indicator">
+<a class="step-pill done" href="index.html">① Login</a>
+<span class="step-arrow">›</span>
+<a class="step-pill done" href="planner.html">② Planner</a>
+<span class="step-arrow">›</span>
+<span class="step-pill active">③ Routine</span>
+</div>
+<!-- Live session clock -->
+<span id="session-clock" style="font-size:.78rem; color:var(--text-muted);
+                   font-variant-numeric:tabular-nums; white-space:nowrap;">
+        Session: 0m 00s
+      </span>
+<!-- Username -->
+<span style="font-size:.82rem; color:var(--primary-light); font-weight:600;">
+        👤 <span id="header-username"></span>
+</span>
+<!-- Clear all button -->
+<button class="btn btn-ghost btn-sm" id="clear-all-btn">🗑 Clear All</button>
+<!-- Logout -->
+<button class="btn btn-ghost btn-sm" id="logout-btn">🚪 Logout</button>
+</div>
+</div>
+</header>
+<!-- ══════════════════════════════════════════════════════════
+     MAIN ROUTINE LAYOUT
+     Single-column, full-width layout:
+       Stats Bar → Progress Panel → Section Header → Cards Grid
+     ══════════════════════════════════════════════════════════ -->
+<main>
+<div class="routine-layout">
+<!-- ════════════════════════════════════════════════════════
+       STATS BAR
+       Chapter 14: CSS Grid — 4 equal columns.
+       Each stat card shows a live count updated by refreshStats().
+       ════════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+<!-- Total Exercises -->
+<div class="stat-card">
+<div class="stat-icon si-purple">📋</div>
+<div>
+<!--
+          Chapter 13: textContent of this element is updated by
+          setEl('stat-total', value) in app.js refreshStats().
+        -->
+<div class="stat-value" id="stat-total">0</div>
+<div class="stat-label">Total Exercises</div>
+</div>
+</div>
+<!-- Completed -->
+<div class="stat-card">
+<div class="stat-icon si-green">✅</div>
+<div>
+<div class="stat-value" id="stat-completed">0</div>
+<div class="stat-label">Completed</div>
+</div>
+</div>
+<!-- Pending -->
+<div class="stat-card">
+<div class="stat-icon si-amber">⏳</div>
+<div>
+<div class="stat-value" id="stat-pending">0</div>
+<div class="stat-label">Pending</div>
+</div>
+</div>
+<!-- Total Sets -->
+<div class="stat-card">
+<div class="stat-icon si-cyan">🔁</div>
+<div>
+<div class="stat-value" id="stat-sets">0</div>
+<div class="stat-label">Total Sets</div>
+</div>
+</div>
+</div><!-- /stats-bar -->
+<!-- ════════════════════════════════════════════════════════
+       OVERALL PROGRESS PANEL
+       Chapter 18: linear-gradient progress bar fill.
+       Chapter 13: bar width and text updated by refreshProgress().
+       ════════════════════════════════════════════════════════ -->
+<div class="overview-panel">
+<div class="overview-row">
+<div>
+<div class="overview-label">📊 Session Progress</div>
+<!--
+          Chapter 13: textContent updated by refreshProgress()
+          via setEl('overview-pct', pct + '%').
+        -->
+<div class="overview-pct" id="overview-pct">0%</div>
+</div>
+<a class="btn btn-outline btn-sm" href="planner.html">
+        ← Back to Planner
+      </a>
+</div>
+<!--
+      Chapter 18: linear-gradient progress bar.
+      The .big-bar-fill width is updated by JS:
+        document.getElementById('big-bar-fill').style.width = pct + '%'
+      The ::after pseudo-element adds a bright tip to the fill.
+    -->
+<div class="big-bar-bg">
+<div class="big-bar-fill" id="big-bar-fill" style="width:0%"></div>
+</div>
+<div class="overview-sub">
+<span id="overview-sub">0 of 0 exercises complete</span>
+<span id="overview-goal">Goal: 45 min session</span>
+</div>
+</div><!-- /overview-panel -->
+<!-- ════════════════════════════════════════════════════════
+       SECTION HEADER — Title + Filter Tabs
+       ════════════════════════════════════════════════════════ -->
+<div class="section-header">
+<div class="section-title">
+      🏋️ My Routine
+      <!--
+        Chapter 13: count pill updated by refreshProgress()
+        via setEl('count-pill', visibleCount).
+      -->
+<span class="count-pill" id="count-pill">0</span>
+</div>
+<!--
+      Filter Tabs — Chapter 13: each tab has a click event
+      listener attached by bindFilterTabs() in app.js.
+      Clicking a tab sets activeFilter and calls renderCards().
+      The .active class is toggled by JS.
+    -->
+<div class="filter-tabs">
+<button class="filter-tab active" data-filter="All">All</button>
+<button class="filter-tab" data-filter="Chest">🫁 Chest</button>
+<button class="filter-tab" data-filter="Back">🏋️ Back</button>
+<button class="filter-tab" data-filter="Legs">🦵 Legs</button>
+<button class="filter-tab" data-filter="Arms">💪 Arms</button>
+<button class="filter-tab" data-filter="Core">🔥 Core</button>
+</div>
+</div><!-- /section-header -->
+<!-- ════════════════════════════════════════════════════════
+       EXERCISE CARDS GRID
+       Chapter 14: CSS Grid with auto-fill — cards wrap
+       automatically based on available width.
+         grid-template-columns: repeat(auto-fill, minmax(290px, 1fr))
+
+       Chapter 13: this container is populated entirely by JS.
+       app.js renderCards() uses a for loop to iterate
+       workoutSession.exercises, calls buildCard(ex) for each,
+       and appends the result with grid.appendChild(card).
+
+       Each card contains:
+         - Status badge (position:absolute — Chapter 14)
+         - Card header with gradient (Chapter 18)
+         - Mini stats grid (Sets | Reps | Rest)
+         - Set progress bar with gradient fill (Chapter 18)
+         - Rest timer display (updated by setInterval — Chapter 13)
+         - Action buttons (event listeners — Chapter 13)
+       ════════════════════════════════════════════════════════ -->
+<div class="cards-grid" id="cards-grid">
+<!--
+      This div is intentionally empty in the HTML.
+      All exercise cards are generated and injected here
+      by app.js initRoutinePage() → renderCards() → buildCard().
+
+      If no exercises exist, an empty-state message is shown instead.
+    -->
+</div><!-- /cards-grid -->
+<!-- ════════════════════════════════════════════════════════
+       REFERENCE: How Cards Are Built (Chapter 13 & 14)
+       ════════════════════════════════════════════════════════
+       The following is a commented-out example of the HTML
+       structure that buildCard() generates for each exercise.
+       It is here for documentation purposes only.
+
+       Key Chapter 14 techniques visible in the structure:
+         1. position:relative on .exercise-card
+         2. position:absolute on .status-badge (top:13px, right:13px)
+         3. .completed-card class added by JS to switch styling
+         4. CSS Grid for .card-stats (3 equal columns)
+
+       Key Chapter 13 techniques:
+         1. onclick="handleCompleteSet(id)" — event listener
+         2. id="timer-{id}" — DOM element targeted by setInterval
+         3. id="prog-fill-{id}" — width updated by JS
+         4. id="badge-{id}" — className switched by JS
+
+  <div class="exercise-card" style="position:relative;">
+
+    [position:absolute badge — Chapter 14]
+    <span class="status-badge badge-pending"
+          style="position:absolute; top:13px; right:13px;">
+      ⏳ Pending
+    </span>
+
+    [Card header — Chapter 18: linear-gradient]
+    <div class="card-header">
+      <div class="muscle-icon mi-chest">🫁</div>
+      <div>
+        <div class="card-name">Bench Press</div>
+        <div class="card-muscle-tag">Chest · Added 09:30</div>
+      </div>
+    </div>
+
+    [Card body — Chapter 18: padding box model]
+    <div class="card-body">
+
+      [Mini stats — Chapter 14: CSS Grid 3-column]
+      <div class="card-stats">
+        <div class="card-stat"><div class="cs-value">3</div><div class="cs-label">Sets</div></div>
+        <div class="card-stat"><div class="cs-value">10</div><div class="cs-label">Reps</div></div>
+        <div class="card-stat"><div class="cs-value">60s</div><div class="cs-label">Rest</div></div>
+      </div>
+
+      [Progress bar — Chapter 18: gradient fill]
+      <div class="progress-wrap">
+        <div class="progress-head">
+          <span>Sets Progress</span>
+          <span id="prog-lbl-1">0/3</span>
+        </div>
+        <div class="progress-bg">
+          <div class="progress-fill" id="prog-fill-1" style="width:0%"></div>
+        </div>
+      </div>
+
+      [Timer — Chapter 13: updated by setInterval every 1000ms]
+      <div class="timer-display" id="timer-1">
+        <span>⏱ <span id="timer-txt-1">Rest timer ready</span></span>
+        <span class="timer-countdown" id="timer-cnt-1"></span>
+      </div>
+
+      [Buttons — Chapter 13: onclick event handlers]
+      <div class="card-actions">
+        <button class="btn btn-accent" onclick="handleCompleteSet(1)">✓ Set Done</button>
+        <button class="btn btn-success" onclick="handleFinishExercise(1)">🏆 Finish</button>
+        <button class="btn btn-danger btn-sm" onclick="handleRemoveExercise(1)">🗑</button>
+      </div>
+
+    </div>
+  </div>
+
+       ════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+       QUICK REFERENCE PANEL
+       Explains the card interactions to the user.
+       ════════════════════════════════════════════════════════ -->
+<div style="margin-top:32px; background:var(--bg-card);
+              border:1px solid var(--border); border-radius:var(--radius-lg);
+              padding:22px 24px; box-shadow:var(--shadow-sm);">
+<h3 style="font-size:.85rem; font-weight:700; color:var(--text-secondary);
+               text-transform:uppercase; letter-spacing:.6px; margin-bottom:14px;">
+      💡 How to Use Your Routine
+    </h3>
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px;">
+<div style="display:flex; gap:10px; align-items:flex-start;">
+<span style="font-size:20px; flex-shrink:0;">✓</span>
+<div>
+<div style="font-size:.82rem; font-weight:700; color:var(--text-primary);">
+            Set Done button
+          </div>
+<div style="font-size:.75rem; color:var(--text-muted); margin-top:2px;">
+            Marks one set complete and starts the rest timer countdown.
+          </div>
+</div>
+</div>
+<div style="display:flex; gap:10px; align-items:flex-start;">
+<span style="font-size:20px; flex-shrink:0;">⏱</span>
+<div>
+<div style="font-size:.82rem; font-weight:700; color:var(--text-primary);">
+            Rest Timer
+          </div>
+<div style="font-size:.75rem; color:var(--text-muted); margin-top:2px;">
+            Counts down your rest interval. Plays a chime and flashes green when done.
+          </div>
+</div>
+</div>
+<div style="display:flex; gap:10px; align-items:flex-start;">
+<span style="font-size:20px; flex-shrink:0;">🏆</span>
+<div>
+<div style="font-size:.82rem; font-weight:700; color:var(--text-primary);">
+            Finish button
+          </div>
+<div style="font-size:.75rem; color:var(--text-muted); margin-top:2px;">
+            Marks the exercise complete. Card turns green and badge updates to "Done".
+          </div>
+</div>
+</div>
+<div style="display:flex; gap:10px; align-items:flex-start;">
+<span style="font-size:20px; flex-shrink:0;">🔍</span>
+<div>
+<div style="font-size:.82rem; font-weight:700; color:var(--text-primary);">
+            Filter Tabs
+          </div>
+<div style="font-size:.75rem; color:var(--text-muted); margin-top:2px;">
+            Filter cards by muscle group. Only matching exercises are shown.
+          </div>
+</div>
+</div>
+</div>
+</div>
+</div><!-- /routine-layout -->
+</main>
+<!-- Footer -->
+<footer class="site-footer">
+<p>
+    Exercise Planner  ·  Page 3 of 3 — Routine  · 
+    Pure HTML / CSS / JavaScript  ·  Chapters 11 · 12 · 13 · 14 · 18
+  </p>
+</footer>
+<!-- Toast container — showToast() appends toasts here -->
+<div class="toast-container" id="toast-container"></div>
+<!--
+  Marker element: app.js checks for this ID to know it is
+  running on the routine page and should call initRoutinePage().
+-->
+<div id="routine-page-marker" style="display:none;"></div>
+<!-- Scripts: session.js must load before app.js -->
+<script src="js/session.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

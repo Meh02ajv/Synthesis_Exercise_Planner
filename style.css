@@ -1,0 +1,1241 @@
+/* ============================================================
+   EXERCISE PLANNER — Shared Stylesheet (style.css)
+   Applied across all 3 pages:
+     - index.html    (Login / Welcome)
+     - planner.html  (Add Exercise + Settings)
+     - routine.html  (Live Routine + Cards + Timers)
+
+   Chapters covered:
+     Chapter 14: Flexbox, CSS Grid, position relative/absolute
+     Chapter 18: Box model, gradients, box-shadow, transitions
+   ============================================================ */
+
+
+/* ============================================================
+   SECTION 1 — CSS CUSTOM PROPERTIES (Design Tokens)
+   Centralised variables so colours/sizes stay consistent
+   across all three pages without repetition.
+   ============================================================ */
+:root {
+  /* Brand colours */
+  --primary:        #4f46e5;   /* indigo */
+  --primary-dark:   #3730a3;
+  --primary-light:  #818cf8;
+  --accent:         #06b6d4;   /* cyan */
+  --accent-dark:    #0891b2;
+  --success:        #10b981;   /* emerald */
+  --success-dark:   #059669;
+  --warning:        #f59e0b;   /* amber */
+  --danger:         #ef4444;   /* red */
+  --danger-dark:    #dc2626;
+
+  /* Surface colours */
+  --bg-dark:        #0f172a;   /* page background */
+  --bg-card:        #1e293b;   /* card / panel background */
+  --bg-input:       #0f172a;   /* form input background */
+
+  /* Border colours */
+  --border:         #334155;
+  --border-light:   #475569;
+
+  /* Text colours */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+
+  /* Border radii */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+
+  /* Chapter 18: box-shadow values for depth hierarchy */
+  --shadow-sm:   0 2px 8px  rgba(0,0,0,.35);
+  --shadow-md:   0 4px 20px rgba(0,0,0,.45);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,.55);
+  --shadow-glow: 0 0 24px   rgba(79,70,229,.35);
+
+  /* Chapter 18: global transition speed */
+  --transition: .25s ease;
+}
+
+
+/* ============================================================
+   SECTION 2 — RESET & BASE STYLES
+   Normalise browser defaults so layout behaves predictably.
+   ============================================================ */
+
+/* Chapter 18: box-sizing: border-box ensures padding and border
+   are included in an element's total width/height — prevents
+   elements from overflowing their containers unexpectedly. */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+a {
+  color: var(--primary-light);
+  text-decoration: none;
+  /* Chapter 18: smooth colour transition on hover */
+  transition: color var(--transition);
+}
+a:hover { color: var(--accent); }
+
+/* Custom scrollbar — purely cosmetic */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 99px; }
+
+
+/* ============================================================
+   SECTION 3 — SHARED HEADER
+   Sticky top navigation bar used on planner.html & routine.html.
+   Chapter 14: display:flex for horizontal alignment.
+   Chapter 18: linear-gradient background.
+   ============================================================ */
+.site-header {
+  /* Chapter 18: multi-stop linear-gradient for depth */
+  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 60%, #0c1a2e 100%);
+  border-bottom: 1px solid var(--border);
+  position: sticky;   /* stays at top while scrolling */
+  top: 0;
+  z-index: 100;       /* sits above all page content */
+  box-shadow: var(--shadow-md);
+}
+
+.header-inner {
+  /* Chapter 14: flexbox — logo left, nav right */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 28px;
+  max-width: 1280px;
+  margin: 0 auto;     /* centre the inner content */
+}
+
+/* Logo group — icon + text stacked */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  /* Chapter 18: gradient background on logo icon */
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: var(--shadow-glow);
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  /* Chapter 18: gradient clipped to text for coloured text effect */
+  background: linear-gradient(90deg, var(--primary-light), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -.3px;
+}
+
+.logo-sub {
+  font-size: .68rem;
+  color: var(--text-muted);
+  -webkit-text-fill-color: var(--text-muted);
+  display: block;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+/* Right side of header — clock, nav links, buttons */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Step indicator pills shown in header on inner pages */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-pill {
+  padding: 4px 14px;
+  border-radius: 99px;
+  font-size: .74rem;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: transparent;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.step-pill.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.step-pill.done {
+  background: rgba(16,185,129,.15);
+  border-color: rgba(16,185,129,.4);
+  color: #34d399;
+}
+
+.step-arrow {
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+
+
+/* ============================================================
+   SECTION 4 — BUTTONS
+   Reusable button styles used across all three pages.
+   Chapter 18: gradients, box-shadow, transition on hover.
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  /* Chapter 18: smooth transition on all properties */
+  transition: all var(--transition);
+  letter-spacing: .2px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+/* Primary — indigo gradient */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79,70,229,.4);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  box-shadow: 0 6px 20px rgba(79,70,229,.55);
+  transform: translateY(-1px); /* subtle lift on hover */
+}
+
+/* Accent — cyan gradient */
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(6,182,212,.35);
+}
+.btn-accent:hover {
+  box-shadow: 0 6px 20px rgba(6,182,212,.5);
+  transform: translateY(-1px);
+}
+
+/* Success — emerald gradient */
+.btn-success {
+  background: linear-gradient(135deg, var(--success), var(--success-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(16,185,129,.35);
+}
+.btn-success:hover {
+  box-shadow: 0 6px 20px rgba(16,185,129,.5);
+  transform: translateY(-1px);
+}
+
+/* Danger — red gradient */
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(239,68,68,.3);
+}
+.btn-danger:hover {
+  box-shadow: 0 6px 20px rgba(239,68,68,.45);
+  transform: translateY(-1px);
+}
+
+/* Outline — transparent with border */
+.btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+  background: rgba(79,70,229,.08);
+}
+
+/* Ghost — minimal, no border */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,.06);
+  color: var(--text-primary);
+}
+
+/* Size modifiers */
+.btn-sm   { padding: 6px 14px; font-size: .78rem; }
+.btn-lg   { padding: 14px 32px; font-size: 1rem; }
+.btn-full { width: 100%; }
+
+/* Disabled state — prevents interaction */
+.btn:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+
+/* ============================================================
+   SECTION 5 — PAGE 1: LOGIN (index.html)
+   Full-viewport centred login card with radial gradient bg.
+   ============================================================ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Chapter 18: layered radial gradients for ambient glow effect */
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(79,70,229,.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(6,182,212,.12) 0%, transparent 55%),
+    var(--bg-dark);
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  /* Chapter 18: padding as part of box model */
+  padding: 48px 44px;
+  width: 100%;
+  max-width: 460px;
+  /* Chapter 18: box-shadow for card depth */
+  box-shadow: var(--shadow-lg);
+  /* Chapter 14: position relative so ::before accent bar is anchored */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top accent bar — decorative gradient stripe */
+.login-card::before {
+  content: '';
+  position: absolute; /* Chapter 14: absolute inside relative parent */
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+}
+
+.login-header { text-align: center; margin-bottom: 36px; }
+
+.login-logo {
+  width: 76px;
+  height: 76px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  margin: 0 auto 20px;
+  box-shadow: var(--shadow-glow);
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.login-subtitle { color: var(--text-muted); font-size: .9rem; }
+
+/* Feature list shown on login page */
+.feature-list {
+  list-style: none;
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .875rem;
+  color: var(--text-secondary);
+}
+
+.feature-list li span.icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(79,70,229,.15);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Page navigation cards on login page */
+.page-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.page-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  text-align: center;
+  text-decoration: none;
+  transition: all var(--transition);
+  display: block;
+}
+
+.page-card:hover {
+  border-color: var(--primary);
+  background: rgba(79,70,229,.08);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-card-icon { font-size: 26px; margin-bottom: 8px; }
+.page-card-title {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.page-card-desc { font-size: .72rem; color: var(--text-muted); }
+
+
+/* ============================================================
+   SECTION 6 — FORMS (Chapter 11)
+   Used on planner.html for the Add Exercise form.
+   ============================================================ */
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+  display: block;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+/* Chapter 18: padding inside input is part of the box model */
+.form-control {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 11px 14px;
+  font-size: .9rem;
+  /* Chapter 18: transition on focus state */
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  font-family: inherit;
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,.2);
+}
+
+.form-control::placeholder { color: var(--text-muted); }
+
+/* Error state — red border + glow */
+.form-control.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239,68,68,.18);
+}
+
+/* Chapter 11: <select> dropdown — custom arrow via background-image */
+select.form-control {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+select.form-control option { background: var(--bg-card); }
+
+/* Two-column grid for Sets + Reps side by side */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Chapter 11: <input type="radio"> — hidden native, styled label */
+.radio-group { display: flex; gap: 8px; }
+.radio-option { flex: 1; }
+.radio-option input[type="radio"] { display: none; } /* hide native radio */
+
+.radio-option label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  /* Chapter 18: transition when radio is selected */
+  transition: all var(--transition);
+  user-select: none;
+}
+
+/* When radio is checked, style its paired label */
+.radio-option input[type="radio"]:checked + label {
+  background: rgba(79,70,229,.15);
+  border-color: var(--primary);
+  color: var(--primary-light);
+  box-shadow: 0 0 0 2px rgba(79,70,229,.2);
+}
+
+.radio-option label:hover {
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+/* Inline validation error message below a field */
+.field-error {
+  font-size: .74rem;
+  color: #fca5a5;
+  margin-top: 5px;
+  display: none; /* hidden by default, shown by JS */
+}
+.field-error.visible { display: block; }
+
+/* Visual divider with centred label text */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0;
+  color: var(--text-muted);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+
+/* ============================================================
+   SECTION 7 — PANEL COMPONENT
+   Reusable card container used on planner.html & routine.html.
+   ============================================================ */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+
+.panel-header {
+  padding: 18px 22px;
+  /* Chapter 18: gradient panel header */
+  background: linear-gradient(135deg, rgba(79,70,229,.18), rgba(6,182,212,.07));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-icon {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.panel-title    { font-size: .98rem; font-weight: 700; color: var(--text-primary); }
+.panel-subtitle { font-size: .74rem; color: var(--text-muted); margin-top: 1px; }
+
+.panel-body { padding: 22px; }
+
+
+/* ============================================================
+   SECTION 8 — PAGE 2: PLANNER LAYOUT (planner.html)
+   Two-column grid: sidebar form | preview list.
+   Chapter 14: CSS Grid layout.
+   ============================================================ */
+.planner-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 28px;
+  padding: 28px 28px 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* Sidebar sticks while user scrolls the preview list */
+.planner-sidebar {
+  position: sticky;
+  top: 88px; /* clears the sticky header height */
+}
+
+/* Exercise preview list on planner.html right column */
+.preview-list { display: flex; flex-direction: column; gap: 12px; }
+
+.preview-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  /* Chapter 18: transition on hover */
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.preview-item:hover {
+  border-color: var(--border-light);
+  transform: translateX(3px);
+}
+
+.preview-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.preview-name  { font-size: .9rem; font-weight: 700; color: var(--text-primary); }
+.preview-meta  { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+
+.preview-remove {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.preview-remove:hover { background: rgba(239,68,68,.12); color: var(--danger); }
+
+/* Empty preview state */
+.preview-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+.preview-empty-icon { font-size: 44px; margin-bottom: 12px; opacity: .4; }
+.preview-empty h3   { font-size: 1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.preview-empty p    { font-size: .82rem; }
+
+/* Settings key-value rows */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-key { font-size: .82rem; color: var(--text-secondary); font-weight: 600; }
+.settings-val { font-size: .82rem; color: var(--primary-light); font-weight: 700; }
+
+/* Exercise count badge in planner header */
+.exercise-count-badge {
+  background: var(--primary);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
+
+/* ============================================================
+   SECTION 9 — PAGE 3: ROUTINE LAYOUT (routine.html)
+   Full-width single column: stats → progress → cards grid.
+   Chapter 14: CSS Grid for stats bar and cards grid.
+   ============================================================ */
+.routine-layout {
+  padding: 28px 28px 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Stats bar — 4-column grid */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  /* Chapter 18: padding as part of box model */
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), transform var(--transition);
+}
+.stat-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  flex-shrink: 0;
+}
+/* Colour variants for each stat icon */
+.si-purple { background: rgba(79,70,229,.15); }
+.si-green  { background: rgba(16,185,129,.15); }
+.si-amber  { background: rgba(245,158,11,.15); }
+.si-cyan   { background: rgba(6,182,212,.15); }
+
+.stat-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.stat-label {
+  font-size: .7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 3px;
+}
+
+/* Overall progress panel */
+.overview-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.overview-label {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 4px;
+}
+
+.overview-pct {
+  font-size: 2.1rem;
+  font-weight: 800;
+  /* Chapter 18: gradient clipped to text */
+  background: linear-gradient(90deg, var(--primary-light), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+/* Chapter 18: gradient progress bar */
+.big-bar-bg {
+  height: 12px;
+  background: var(--bg-input);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.big-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
+  transition: width .6s ease;
+  position: relative;
+}
+
+/* Bright tip on the progress bar fill */
+.big-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: rgba(255,255,255,.45);
+  border-radius: 99px;
+}
+
+.overview-sub {
+  font-size: .76rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Section header row — title + filter tabs */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.count-pill {
+  background: var(--primary);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+}
+
+/* Filter tab buttons */
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.filter-tab {
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-size: .74rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.filter-tab:hover  { border-color: var(--border-light); color: var(--text-primary); }
+.filter-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+
+/* ============================================================
+   SECTION 10 — EXERCISE CARDS (routine.html)
+   Chapter 14: CSS Grid auto-fill, position relative/absolute.
+   Chapter 18: box-shadow, gradients, transitions.
+   ============================================================ */
+
+/* Auto-fill grid — cards wrap responsively */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+}
+
+/* Individual exercise card */
+.exercise-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  /* Chapter 18: box-shadow for card depth */
+  box-shadow: var(--shadow-sm);
+  /* Chapter 18: transition on hover and state change */
+  transition: all var(--transition);
+  /* Chapter 14: position relative — anchors the absolute status badge */
+  position: relative;
+}
+
+.exercise-card:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+/* ── Status Badge (Chapter 14: position absolute) ──────────
+   Pinned to the top-right corner of the card using:
+     position: absolute  (relative to .exercise-card)
+     top / right offsets
+   This is the key Chapter 14 positioning technique. */
+.status-badge {
+  position: absolute; /* Chapter 14: absolute positioning */
+  top: 13px;
+  right: 13px;
+  padding: 4px 11px;
+  border-radius: 99px;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  z-index: 2; /* sits above card header content */
+}
+
+/* Badge colour variants */
+.badge-pending {
+  background: rgba(245,158,11,.14);
+  border: 1px solid rgba(245,158,11,.4);
+  color: #fbbf24;
+}
+.badge-inprogress {
+  background: rgba(79,70,229,.14);
+  border: 1px solid rgba(79,70,229,.4);
+  color: var(--primary-light);
+}
+.badge-completed {
+  background: rgba(16,185,129,.14);
+  border: 1px solid rgba(16,185,129,.4);
+  color: #34d399;
+}
+
+/* ── Completed card — class selector switches styling ──────
+   Chapter 14: .completed-card class applied by JS to change
+   the card's visual appearance when an exercise is finished. */
+.exercise-card.completed-card {
+  border-color: rgba(16,185,129,.28);
+  background: linear-gradient(160deg, var(--bg-card), rgba(16,185,129,.04));
+}
+.exercise-card.completed-card .card-header {
+  background: linear-gradient(135deg, rgba(16,185,129,.22), rgba(16,185,129,.08));
+}
+
+/* Card header bar with gradient background */
+.card-header {
+  padding: 15px 17px 13px;
+  /* Chapter 18: linear-gradient on card header */
+  background: linear-gradient(135deg, rgba(79,70,229,.16), rgba(6,182,212,.07));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background var(--transition);
+}
+
+/* Muscle group icon — colour coded per group */
+.muscle-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.mi-chest { background: rgba(239,68,68,.15); }
+.mi-back  { background: rgba(79,70,229,.15); }
+.mi-legs  { background: rgba(16,185,129,.15); }
+.mi-arms  { background: rgba(245,158,11,.15); }
+.mi-core  { background: rgba(6,182,212,.15); }
+
+.card-name {
+  font-size: .93rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  padding-right: 74px; /* prevent overlap with absolute badge */
+}
+.card-muscle-tag {
+  font-size: .68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 3px;
+}
+
+/* Card body — Chapter 18: padding as box model */
+.card-body { padding: 15px 17px 17px; }
+
+/* Mini stats: Sets | Reps | Rest */
+.card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 13px;
+}
+
+.card-stat {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 6px;
+  text-align: center;
+}
+.cs-value {
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.cs-label {
+  font-size: .63rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-top: 4px;
+}
+
+/* Set progress bar */
+.progress-wrap { margin-bottom: 11px; }
+
+.progress-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: .71rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.progress-bg {
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+/* Chapter 18: gradient fill on progress bar */
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width .5s ease;
+}
+
+/* Rest timer display row */
+.timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  font-size: .8rem;
+  color: var(--text-muted);
+  /* Chapter 18: transition when timer activates */
+  transition: all var(--transition);
+  gap: 8px;
+}
+
+/* Timer active state — blue glow */
+.timer-display.timer-active {
+  background: rgba(79,70,229,.1);
+  border-color: var(--primary);
+  color: var(--primary-light);
+}
+
+/* Timer done state — green glow */
+.timer-display.timer-done {
+  background: rgba(16,185,129,.1);
+  border-color: var(--success);
+  color: #34d399;
+}
+
+/* Countdown number — tabular nums for stable width */
+.timer-countdown {
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Card action buttons row */
+.card-actions { display: flex; gap: 7px; }
+.card-actions .btn { flex: 1; font-size: .76rem; padding: 8px 5px; }
+
+/* Empty state when no exercises match filter */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 72px 24px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 58px; margin-bottom: 16px; opacity: .42; }
+.empty-state h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.empty-state p { font-size: .855rem; }
+
+
+/* ============================================================
+   SECTION 11 — TOAST NOTIFICATIONS
+   Fixed bottom-right stack of transient messages.
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none; /* clicks pass through container */
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 13px 18px;
+  min-width: 270px;
+  max-width: 360px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: .845rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  animation: toastIn .3s ease;
+  pointer-events: auto;
+}
+
+/* Left border colour indicates toast type */
+.toast.t-success { border-left: 4px solid var(--success); }
+.toast.t-info    { border-left: 4px solid var(--primary); }
+.toast.t-warning { border-left: 4px solid var(--warning); }
+.toast.t-danger  { border-left: 4px solid var(--danger);  }
+
+/* Slide in from right */
+@keyframes toastIn {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Slide out to right */
+@keyframes toastOut {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(110%); opacity: 0; }
+}
+
+
+/* ============================================================
+   SECTION 12 — FOOTER
+   ============================================================ */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 18px 28px;
+  text-align: center;
+  font-size: .76rem;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  margin-top: 40px;
+}
+
+
+/* ============================================================
+   SECTION 13 — RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* Tablet — collapse two-column layouts */
+@media (max-width: 1024px) {
+  .planner-layout { grid-template-columns: 1fr; }
+  .planner-sidebar { position: static; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile — single column everything */
+@media (max-width: 640px) {
+  .stats-bar    { grid-template-columns: 1fr 1fr; }
+  .form-row     { grid-template-columns: 1fr; }
+  .header-inner { padding: 12px 16px; }
+  .planner-layout, .routine-layout { padding: 16px 14px 40px; }
+  .filter-tabs  { display: none; }
+  .page-cards   { grid-template-columns: 1fr; }
+  .login-card   { padding: 32px 22px; }
+}
+
+
+/* ============================================================
+   SECTION 14 — UTILITY CLASSES
+   ============================================================ */
+.hidden      { display: none !important; }
+.mt-2        { margin-top: 8px; }
+.mt-4        { margin-top: 16px; }
+.mb-4        { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.text-sm     { font-size: .875rem; }
+.text-muted  { color: var(--text-muted); }
+.font-bold   { font-weight: 700; }
+.flex        { display: flex; }
+.items-center{ align-items: center; }
+.gap-2       { gap: 8px; }

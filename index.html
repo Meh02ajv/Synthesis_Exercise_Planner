@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<!--
+  ============================================================
+  PAGE 1 — index.html (Login / Welcome)
+  ============================================================
+  Purpose:
+    Entry point of the application. Collects the user's name,
+    writes it into the JS session (localStorage), and redirects
+    to planner.html.
+
+  Chapter 12: Session initialisation — equivalent to PHP's
+              session_start() + storing $_SESSION['username'].
+  Chapter 11: Form handling — input validation before storing.
+  Chapter 14: Flexbox centred layout, CSS custom properties.
+  Chapter 18: Radial gradient background, box-shadow card,
+              linear-gradient accent bar, smooth transitions.
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Exercise Planner — Welcome</title>
+<!--
+    Shared stylesheet — applies the dark theme, button styles,
+    form styles, and login-page layout across all pages.
+  -->
+<link href="css/style.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN PAGE WRAPPER
+     Chapter 14: display:flex centres the card both vertically
+     and horizontally in the full viewport height.
+     Chapter 18: layered radial-gradient background creates
+     ambient colour glow behind the card.
+     ══════════════════════════════════════════════════════════ -->
+<div class="login-page">
+<!-- ── Login Card ──────────────────────────────────────────
+       Chapter 18:
+         - background: var(--bg-card) dark surface
+         - border-radius: var(--radius-xl) rounded corners
+         - box-shadow: var(--shadow-lg) deep drop shadow
+         - position:relative so the ::before accent bar
+           (position:absolute) is anchored to this card.
+  ──────────────────────────────────────────────────────────── -->
+<div class="login-card">
+<!-- Top accent bar rendered via CSS ::before pseudo-element
+         (position:absolute, linear-gradient, height:4px) -->
+<!-- ── Header ── -->
+<div class="login-header">
+<!-- Logo icon with gradient background (Chapter 18) -->
+<div class="login-logo">🏋️</div>
+<h1 class="login-title">Exercise Planner</h1>
+<p class="login-subtitle">
+        Your personal workout routine manager
+      </p>
+</div>
+<!-- ── Feature List ── -->
+<ul class="feature-list">
+<li>
+<span class="icon">📋</span>
+        Build your routine on the Planner page
+      </li>
+<li>
+<span class="icon">⏱</span>
+        Live rest timers with audio chime alerts
+      </li>
+<li>
+<span class="icon">📊</span>
+        Track progress with real-time stats
+      </li>
+<li>
+<span class="icon">💾</span>
+        Session data persists across page navigation
+      </li>
+</ul>
+<!-- ── Page Navigation Cards ──────────────────────────────
+         Shows the user the 3-page structure before they log in.
+         Chapter 14: CSS Grid two-column layout.
+    ──────────────────────────────────────────────────────────── -->
+<div class="page-cards">
+<div class="page-card" style="cursor:default; pointer-events:none; opacity:.6;">
+<div class="page-card-icon">🔐</div>
+<div class="page-card-title">Page 1 — Login</div>
+<div class="page-card-desc">You are here</div>
+</div>
+<a class="page-card" href="planner.html">
+<div class="page-card-icon">📝</div>
+<div class="page-card-title">Page 2 — Planner</div>
+<div class="page-card-desc">Add exercises &amp; settings</div>
+</a>
+</div>
+<div class="page-cards" style="margin-top:-4px;">
+<a class="page-card" href="routine.html" style="grid-column:1/-1;">
+<div class="page-card-icon">🏃</div>
+<div class="page-card-title">Page 3 — Routine</div>
+<div class="page-card-desc">Live workout with timers &amp; progress tracking</div>
+</a>
+</div>
+<!-- ── Login Form ──────────────────────────────────────────
+         Chapter 11: HTML form with text input.
+         Chapter 11: JS intercepts submit via addEventListener
+                     + e.preventDefault() in app.js.
+         Chapter 11: Input is validated (min 2 chars) and
+                     sanitized with escHtml() before storing.
+    ──────────────────────────────────────────────────────────── -->
+<div class="divider">Enter your name to begin</div>
+<form id="login-form" novalidate="">
+<div class="form-group">
+<label class="form-label" for="login-name">Your Name</label>
+<!--
+          Chapter 11: <input type="text"> — primary text input.
+          The 'autocomplete' attribute helps returning users.
+          Validation is handled entirely in JS (app.js initLoginPage).
+        -->
+<input autocomplete="name" class="form-control" id="login-name" maxlength="40" name="login-name" placeholder="e.g. Alex, Jordan, Sam…" type="text"/>
+<!-- JS writes an error message here if validation fails -->
+<div class="field-error" id="login-error"></div>
+</div>
+<!--
+        Submit button — triggers the form's 'submit' event
+        which is caught by addEventListener in app.js.
+        Chapter 18: gradient background, box-shadow, hover transition.
+      -->
+<button class="btn btn-primary btn-full btn-lg" style="margin-top:4px;" type="submit">
+        🚀 Start My Session
+      </button>
+</form>
+<p class="text-center mt-4 text-sm text-muted">
+      No account needed  ·  Session stored locally  ·  No database required
+    </p>
+</div><!-- /login-card -->
+</div><!-- /login-page -->
+<!-- Toast notification container (shared across all pages) -->
+<div class="toast-container" id="toast-container"></div>
+<!--
+  Script loading order matters:
+    1. session.js — must load first; defines workoutSession,
+       loadSession(), saveSession(), and all shared utilities
+       used by app.js.
+    2. app.js — reads workoutSession and binds page logic.
+-->
+<script src="js/session.js"></script>
+<script src="js/app.js"></script>
+<!--
+  Marker element: app.js checks for this ID to know it is
+  running on the login page and should call initLoginPage().
+-->
+<div id="login-page-marker" style="display:none;"></div>
+</body>
+</html>
